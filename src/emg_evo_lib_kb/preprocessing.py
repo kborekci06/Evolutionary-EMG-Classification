@@ -23,3 +23,10 @@ def load_emg_file(path, emg_column_names):
     return df
 
 # Iterate through folder of emg files
+def iter_emg_files(root, pattern = "*.txt"):
+    """
+    Recursively find all EMG text files under a root directory.
+    """
+    return sorted(root.rglob(pattern))
+
+#%%

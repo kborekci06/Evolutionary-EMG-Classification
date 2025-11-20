@@ -1,0 +1,20 @@
+[project]
+name = "emg_evo_lib_kb"
+version = "0.1.0"
+description = "EMG preprocessing, feature extraction, and evolutionary classification tools."
+authors = [
+    { name = "Kaan Borekci" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+# Add your library dependencies here
+dependencies = []
+
+# This tells setuptools to find packages inside /src
+[tool.setuptools.packages]
+find = { where = ["src"] }
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
