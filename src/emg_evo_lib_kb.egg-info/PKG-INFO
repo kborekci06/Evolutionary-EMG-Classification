@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: emg_evo_lib_kb
+Version: 0.1.0
+Summary: EMG preprocessing, feature extraction, and evolutionary classification tools.
+Author: Kaan Borekci
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+# Evolutionary-EMG-Classification
+This repo contains the final project for my graduate level Evolutionary Computation course (CS496 @ Northwestern). The project focuses on using evolutionary computation to develop a EMG signal classifier.
