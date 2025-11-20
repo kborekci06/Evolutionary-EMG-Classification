@@ -1,1 +1,1 @@
-from .preprocessing import (load_emg_file, iter_emg_files)
+from .preprocessing import (load_emg_file, iter_emg_files, segment_gestures)
