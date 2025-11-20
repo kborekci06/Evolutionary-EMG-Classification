@@ -29,4 +29,43 @@ def iter_emg_files(root, pattern = "*.txt"):
     """
     return sorted(root.rglob(pattern))
 
-#%%
+#%% Segment Function
+def segment_gestures(df, valid_classes):
+    """
+    Segment a continuous EMG recording into gesture segments.
+
+    Each segment is a contiguous run of the same non-zero class.
+    We ignore class 0 (unmarked / in-between).
+
+    Returns:
+        List of (segment_df, class_label)
+    """
+    segments = []
+
+    current_label = 0
+    start_idx = None
+
+    class_series = df["Class"].to_numpy()
+
+    for i, label in enumerate(class_series):
+        if label != current_label:
+            # End of a gesture segment
+            if current_label in valid_classes and start_idx is not None:
+                end_idx = i  # exclusive
+                seg = df.iloc[start_idx:end_idx]
+                segments.append((seg, int(current_label)))
+
+            # Start of a new gesture segment
+            if label in valid_classes:
+                start_idx = i
+            else:
+                start_idx = None
+
+            current_label = label
+
+    # Handle segment that might continue until end of file
+    if current_label in valid_classes and start_idx is not None:
+        seg = df.iloc[start_idx:]
+        segments.append((seg, int(current_label)))
+
+    return segments
