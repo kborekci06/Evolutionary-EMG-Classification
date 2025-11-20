@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import math
 
 #%% Data Load Functions
+
+# Load a single emg file
 def load_emg_file(path, emg_column_names):
     """
     Load a single EMG text file into a DataFrame.
@@ -20,3 +22,4 @@ def load_emg_file(path, emg_column_names):
     df = pd.read_csv(path, delim_whitespace=True, header=None, names=emg_column_names)
     return df
 
+# Iterate through folder of emg files
