@@ -19,7 +19,7 @@ def load_emg_file(path, emg_column_names):
     - whitespace-delimited
     - 10 columns: Time, ch1..ch8, Class
     """
-    df = pd.read_csv(path, delim_whitespace=True, header=None, names=emg_column_names)
+    df = pd.read_csv(path, delim_whitespace=True, header=0, names=emg_column_names)
     return df
 
 # Iterate through folder of emg files
