@@ -68,4 +68,5 @@ def segment_gestures(df, valid_classes):
         seg = df.iloc[start_idx:]
         segments.append((seg, int(current_label)))
 
+    # segments is a List of (segment_df, class_label)
     return segments
