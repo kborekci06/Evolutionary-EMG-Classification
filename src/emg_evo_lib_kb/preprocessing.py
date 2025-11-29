@@ -70,3 +70,17 @@ def segment_gestures(df, valid_classes):
 
     # segments is a List of (segment_df, class_label)
     return segments
+
+#%% Returns sampling rate from time column
+def estimate_sampling_rate(time_ms):
+    """
+    Estimate sampling rate [Hz] from time column in milliseconds.
+    """
+    if len(time_ms) < 2:
+        return 1.0  # fallback, won't matter much for FFT shape
+    dt_ms = np.median(np.diff(time_ms))
+    if dt_ms <= 0:
+        return 1.0
+    fs = 1000.0 / dt_ms  # convert ms -> s
+    return fs
+
