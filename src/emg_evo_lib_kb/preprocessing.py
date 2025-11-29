@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import math
 
 #%% Data Load Functions
-
 # Load a single emg file
 def load_emg_file(path, emg_column_names):
     """
