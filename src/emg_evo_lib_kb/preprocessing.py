@@ -201,3 +201,63 @@ def compute_segment_features(segment):
 
     features = np.concatenate(feat_list, axis=0)  # shape (8_channels * 8_features = 64,)
     return features
+
+#%% Function to build the full feature dataset
+
+def build_feature_dataset(root, file_pattern="*.txt", verbose=True):
+    """
+    Build the full feature dataset from all EMG text files.
+
+    Steps:
+    - Find all files under `root` matching `file_pattern`.
+    - For each file:
+        - Load data
+        - Segment into gestures
+        - Extract 64-dim features for each segment
+
+    Returns:
+        X : np.ndarray of shape (N_samples, 64)
+        y : np.ndarray of shape (N_samples,)
+        meta : list of dicts with metadata per sample
+               (e.g., file path, segment index, subject ID)
+    """
+    all_features: List[np.ndarray] = []
+    all_labels: List[int] = []
+    meta: List[Dict] = []
+
+    files = iter_emg_files(root, pattern=file_pattern)
+    if verbose:
+        print(f"Found {len(files)} EMG files under {root}")
+
+    for file_idx, path in enumerate(files):
+        df = load_emg_file(path)
+        segments = segment_gestures(df)
+
+        if verbose:
+            print(f"[{file_idx+1}/{len(files)}] {path.name}: {len(segments)} gesture segments")
+
+        # Try to infer subject from parent folder name (optional)
+        subject_id = path.parent.name
+
+        for seg_idx, (segment_df, label) in enumerate(segments):
+            feat = compute_segment_features(segment_df)
+            all_features.append(feat)
+            all_labels.append(label)
+            meta.append(
+                {
+                    "file_path": str(path),
+                    "subject_id": subject_id,
+                    "segment_index": seg_idx,
+                    "label": label,
+                    "num_samples": len(segment_df),
+                }
+            )
+
+    X = np.vstack(all_features) if all_features else np.empty((0, 0))
+    y = np.array(all_labels, dtype=int)
+
+    if verbose:
+        print(f"Total segments: {len(y)}")
+        print(f"Feature matrix shape: {X.shape}")  # should be (N_segments, 64)
+
+    return X, y, meta
