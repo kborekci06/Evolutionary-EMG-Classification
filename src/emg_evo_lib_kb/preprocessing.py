@@ -84,3 +84,85 @@ def estimate_sampling_rate(time_ms):
     fs = 1000.0 / dt_ms  # convert ms -> s
     return fs
 
+#%% Function that computes the features of 1 EMG channel signal (=x)
+def channel_features(x, fs):
+    """
+    Compute 8 features for a single EMG channel signal x:
+
+    1. RMS  (Root Mean Square)
+    2. MAV  (Mean Absolute Value)
+    3. WL   (Waveform Length)
+    4. ZC   (Zero Crossings with threshold)
+    5. SSC  (Slope Sign Changes with threshold)
+    6. VAR  (Variance)
+    7. MNF  (Mean Frequency, from power spectrum)
+    8. MDF  (Median Frequency, from power spectrum)
+
+    Returns:
+        np.array of shape (8,)
+    """
+    x = x.astype(float)
+    N = len(x)
+
+    if N < 3:
+        # Degenerate case; return zeros
+        return np.zeros(8, dtype=float)
+
+    # --- Time-domain features ---
+
+    # 1. RMS
+    rms = np.sqrt(np.mean(x**2))
+
+    # 2. MAV (Mean absolute value)
+    mav = np.mean(np.abs(x))
+
+    # 3. WL (Waveform length)
+    wl = np.sum(np.abs(np.diff(x)))
+
+    # Set small threshold relative to signal amplitude
+    thr = 0.01 * np.max(np.abs(x)) if np.max(np.abs(x)) > 0 else 0.0
+
+    # 4. ZC (Zero crossings)
+    x1 = x[:-1]
+    x2 = x[1:]
+    sign_change = (x1 * x2) < 0
+    above_thr = (np.abs(x1 - x2) > thr)
+    zc = np.sum(sign_change & above_thr)
+
+    # 5. SSC (Slope sign changes)
+    x_prev = x[:-2]
+    x_curr = x[1:-1]
+    x_next = x[2:]
+    ssc_cond = ((x_curr - x_prev) * (x_curr - x_next) > 0)
+    ssc_thr = (np.abs(x_curr - x_prev) > thr) | (np.abs(x_curr - x_next) > thr)
+    ssc = np.sum(ssc_cond & ssc_thr)
+
+    # 6. VAR (Variance)
+    var = np.var(x)
+
+    # --- Frequency-domain features via FFT ---
+
+    # rFFT (one-sided spectrum)
+    X = np.fft.rfft(x)
+    P = np.abs(X) ** 2  # power spectrum
+    freqs = np.fft.rfftfreq(N, d=1.0 / fs)
+
+    # Avoid division by zero
+    total_power = np.sum(P)
+    if total_power <= 0:
+        mnf = 0.0
+        mdf = 0.0
+    else:
+        # 7. MNF (Mean Frequency)
+        mnf = np.sum(freqs * P) / total_power
+
+        # 8. MDF (Median Frequency)
+        cumulative_power = np.cumsum(P)
+        mdf_idx = np.searchsorted(cumulative_power, 0.5 * total_power)
+        if mdf_idx >= len(freqs):
+            mdf_idx = len(freqs) - 1
+        mdf = freqs[mdf_idx]
+
+    return np.array([rms, mav, wl, zc, ssc, var, mnf, mdf], dtype=float)
+
+
