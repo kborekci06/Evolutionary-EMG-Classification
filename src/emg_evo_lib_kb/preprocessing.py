@@ -166,3 +166,38 @@ def channel_features(x, fs):
     return np.array([rms, mav, wl, zc, ssc, var, mnf, mdf], dtype=float)
 
 
+#%% Feature Extraction (64-D per segment)
+def compute_segment_features(segment):
+    """
+    Compute features for a single gesture segment.
+
+    For each of the 8 EMG channels, we compute:
+
+        1. RMS  (Root Mean Square)
+        2. MAV  (Mean Absolute Value)
+        3. WL   (Waveform Length)
+        4. ZC   (Zero Crossings)
+        5. SSC  (Slope Sign Changes)
+        6. VAR  (Variance)
+        7. MNF  (Mean Frequency)
+        8. MDF  (Median Frequency)
+
+    That is 8 features × 8 channels = 64 features.
+    Features are concatenated channel-wise:
+        [feat_ch1_1..8, feat_ch2_1..8, ..., feat_ch8_1..8]
+    """
+    ch_cols = [f"ch{i}" for i in range(1, 9)]
+    data = segment[ch_cols].to_numpy()  # shape (T, 8)
+    time_ms = segment["Time"].to_numpy()
+
+    fs = estimate_sampling_rate(time_ms)
+    n_channels = data.shape[1]
+
+    feat_list = []
+    for ch in range(n_channels):
+        x = data[:, ch]
+        feats_ch = channel_features(x, fs)
+        feat_list.append(feats_ch)
+
+    features = np.concatenate(feat_list, axis=0)  # shape (8_channels * 8_features = 64,)
+    return features
