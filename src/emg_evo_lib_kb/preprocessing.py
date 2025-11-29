@@ -204,7 +204,8 @@ def compute_segment_features(segment):
 
 #%% Function to build the full feature dataset
 
-def build_feature_dataset(root, emg_column_names, file_pattern="*.txt", verbose=True):
+def build_feature_dataset(root, emg_column_names, valid_classes,
+                          file_pattern="*.txt", verbose=True):
     """
     Build the full feature dataset from all EMG text files.
 
@@ -231,7 +232,7 @@ def build_feature_dataset(root, emg_column_names, file_pattern="*.txt", verbose=
 
     for file_idx, path in enumerate(files):
         df = load_emg_file(path, emg_column_names)
-        segments = segment_gestures(df)
+        segments = segment_gestures(df, valid_classes)
 
         if verbose:
             print(f"[{file_idx+1}/{len(files)}] {path.name}: {len(segments)} gesture segments")
