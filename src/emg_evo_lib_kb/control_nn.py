@@ -17,7 +17,7 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-from preprocessing import build_feature_dataset
+from emg_evo_lib_kb import build_feature_dataset
 
 #%% Data Loading & Splitting
 
