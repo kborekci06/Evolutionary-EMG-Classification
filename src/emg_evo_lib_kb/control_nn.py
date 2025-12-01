@@ -65,3 +65,43 @@ def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, 
     print(f"  Test:  {X_test.shape[0]}")
 
     return X_train, X_val, X_test, y_train, y_val, y_test
+
+#%% Model Definition Multi Layer Perceptron (NN for Classification)
+
+def build_mlp_classifier(input_dim, hidden_layers = (64, 32), random_state = 42):
+    """
+    Build a standard neural network classifier (MLP) with backprop,
+    wrapped in a Pipeline that includes feature scaling.
+
+    Args:
+        input_dim: number of input features (should be 64 here)
+        hidden_layers: sizes of hidden layers, e.g. (64, 32)
+        random_state: for reproducible weight initialization
+
+    Returns:
+        A scikit-learn Pipeline: StandardScaler -> MLPClassifier
+    """
+
+    mlp = MLPClassifier(
+        hidden_layer_sizes=hidden_layers,
+        activation="relu",
+        solver="adam",
+        alpha=1e-3,             # L2 regularization
+        batch_size="auto",
+        learning_rate="adaptive",
+        max_iter=500,
+        early_stopping=True,
+        n_iter_no_change=20,
+        validation_fraction=0.1,  # internal validation (inside training set)
+        random_state=random_state,
+    )
+
+    pipeline = Pipeline(
+        steps=[
+            ("scaler", StandardScaler()),
+            ("mlp", mlp),
+        ]
+    )
+
+    return pipeline
+
