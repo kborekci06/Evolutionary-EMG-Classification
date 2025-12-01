@@ -173,7 +173,7 @@ def train_and_evaluate(root, emg_column_names, valid_classes, hidden_layers = (6
         - Print metrics and plot confusion matrix on test set
     """
     # 1. Load and split data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_and_split(root, emg_column_names, valid_classes)
+    X_train, X_val, X_test, y_train, y_val, y_test, kept_classes = load_data_and_split(root, emg_column_names, valid_classes)
 
     input_dim = X_train.shape[1]
     print(f"\nInput feature dimension: {input_dim}")
@@ -202,11 +202,11 @@ def train_and_evaluate(root, emg_column_names, valid_classes, hidden_layers = (6
         classification_report(
             y_test,
             y_test_pred,
-            labels=valid_classes,
+            labels=kept_classes,
             digits=3,
         )
     )
 
     # 6. Confusion matrix
-    cm = confusion_matrix(y_test, y_test_pred, labels=valid_classes)
-    plot_confusion_matrix(cm, class_labels=valid_classes, title="MLP Confusion Matrix (Test Set)")
+    cm = confusion_matrix(y_test, y_test_pred, labels=kept_classes)
+    plot_confusion_matrix(cm, class_labels=kept_classes.tolist(), title="MLP Confusion Matrix (Test Set)")
