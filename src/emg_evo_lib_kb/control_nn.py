@@ -105,3 +105,28 @@ def build_mlp_classifier(input_dim, hidden_layers = (64, 32), random_state = 42)
 
     return pipeline
 
+#%% Function to Plot Confusion Matrix
+
+def plot_confusion_matrix(cm, class_labels, title = "Confusion Matrix"):
+    """
+    Plot a confusion matrix heatmap.
+
+    Args:
+        cm: confusion matrix (n_classes x n_classes)
+        class_labels: list of labels (e.g., [1,2,3,4,5,6,7])
+        title: plot title
+    """
+    plt.figure(figsize=(7, 6))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=class_labels,
+        yticklabels=class_labels,
+    )
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
