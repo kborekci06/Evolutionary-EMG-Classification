@@ -2,6 +2,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Tuple
+from collections import Counter
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,21 +27,35 @@ def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, 
     Load features & labels using preprocessing.build_feature_dataset
     and split into train, validation, and test sets.
 
-    Args:
-        root: dataset root path (same as DATA_ROOT in preprocessing.py)
-        test_size: fraction of data to hold out for final test
-        val_size: fraction of remaining train to use for validation
-        random_state: for reproducible splitting
+    - Drops classes that have fewer than `min_samples_per_class` samples.
+    - Uses stratified splitting where possible.
 
     Returns:
-        X_train, X_val, X_test, y_train, y_val, y_test
+        X_train, X_val, X_test, y_train, y_val, y_test, kept_classes
     """
-    X, y, meta = build_feature_dataset(root, emg_column_names, valid_classes, verbose=True)
+    X, y, meta = build_feature_dataset(root, verbose=True)
 
-    print("\nUnique labels in y:", np.unique(y))
+    print("\nRaw unique labels in y:", np.unique(y))
     print("Total samples:", len(y))
 
-    # First: train + temp_test
+    # --- Check class counts and drop ultra-rare classes ---
+    counts = Counter(y)
+    print("\nClass counts before filtering:", counts)
+
+    rare_classes = [cls for cls, c in counts.items() if c < min_samples_per_class]
+    if rare_classes:
+        print(f"\n[WARNING] Dropping classes with < {min_samples_per_class} samples: {rare_classes}")
+        mask = ~np.isin(y, rare_classes)
+        X = X[mask]
+        y = y[mask]
+        print("New total samples after dropping rare classes:", len(y))
+        counts = Counter(y)
+        print("Class counts after filtering:", counts)
+
+    kept_classes = sorted(counts.keys())
+    print("\nClasses kept for training:", kept_classes)
+
+    # --- First: train + temp test (stratified) ---
     X_train, X_temp, y_train, y_temp = train_test_split(
         X,
         y,
@@ -49,23 +64,36 @@ def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, 
         random_state=random_state,
     )
 
-    # Then split temp into val + test
-    val_ratio = val_size / (1.0 - test_size)  # fraction of X_temp to use as val
-    X_val, X_test, y_val, y_test = train_test_split(
-        X_temp,
-        y_temp,
-        test_size=1.0 - val_ratio,
-        stratify=y_temp,
-        random_state=random_state,
-    )
+    # --- Second: temp -> val + test ---
+    # We *try* stratified split; if it's not possible (e.g. some class gets only 1 sample),
+    # fall back to non-stratified for this step.
+    val_ratio = val_size / (1.0 - test_size)
+
+    try:
+        X_val, X_test, y_val, y_test = train_test_split(
+            X_temp,
+            y_temp,
+            test_size=1.0 - val_ratio,
+            stratify=y_temp,
+            random_state=random_state,
+        )
+    except ValueError as e:
+        print("\n[WARNING] Stratified split for val/test failed:", e)
+        print("[INFO] Falling back to non-stratified split for val/test.")
+        X_val, X_test, y_val, y_test = train_test_split(
+            X_temp,
+            y_temp,
+            test_size=1.0 - val_ratio,
+            stratify=None,
+            random_state=random_state,
+        )
 
     print(f"\nSplit sizes:")
     print(f"  Train: {X_train.shape[0]}")
     print(f"  Val:   {X_val.shape[0]}")
     print(f"  Test:  {X_test.shape[0]}")
 
-    return X_train, X_val, X_test, y_train, y_val, y_test
-
+    return X_train, X_val, X_test, y_train, y_val, y_test, np.array(kept_classes, dtype=int)
 #%% Model Definition Multi Layer Perceptron (NN for Classification)
 
 def build_mlp_classifier(input_dim, hidden_layers = (64, 32), random_state = 42):
