@@ -130,3 +130,55 @@ def plot_confusion_matrix(cm, class_labels, title = "Confusion Matrix"):
     plt.title(title)
     plt.tight_layout()
     plt.show()
+
+#%% Function for Training & Evaluation
+
+def train_and_evaluate(root, valid_classes, hidden_layers = (64, 32)):
+    """
+    Full training + evaluation pipeline for the control neural network.
+
+    Steps:
+        - Load dataset using preprocessing.build_feature_dataset
+        - Split into train/val/test
+        - Train MLP (with StandardScaler)
+        - Evaluate on val and test sets
+        - Print metrics and plot confusion matrix on test set
+    """
+    # 1. Load and split data
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_and_split(root)
+
+    input_dim = X_train.shape[1]
+    print(f"\nInput feature dimension: {input_dim}")
+
+    # 2. Build model
+    model = build_mlp_classifier(input_dim=input_dim, hidden_layers=hidden_layers)
+
+    # 3. Train model (on train only)
+    print("\nTraining MLP classifier...")
+    model.fit(X_train, y_train)
+
+    # 4. Evaluate on validation set
+    print("\n--- Validation Performance ---")
+    y_val_pred = model.predict(X_val)
+    val_acc = accuracy_score(y_val, y_val_pred)
+    print(f"Validation Accuracy: {val_acc * 100:.2f}%")
+
+    # 5. Evaluate on test set (final hold-out)
+    print("\n--- Test Performance ---")
+    y_test_pred = model.predict(X_test)
+    test_acc = accuracy_score(y_test, y_test_pred)
+    print(f"Test Accuracy: {test_acc * 100:.2f}%\n")
+
+    print("Classification report (Test):")
+    print(
+        classification_report(
+            y_test,
+            y_test_pred,
+            labels=valid_classes,
+            digits=3,
+        )
+    )
+
+    # 6. Confusion matrix
+    cm = confusion_matrix(y_test, y_test_pred, labels=valid_classes)
+    plot_confusion_matrix(cm, class_labels=valid_classes, title="MLP Confusion Matrix (Test Set)")
