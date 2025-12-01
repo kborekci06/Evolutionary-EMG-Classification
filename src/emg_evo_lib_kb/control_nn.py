@@ -33,7 +33,7 @@ def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, 
     Returns:
         X_train, X_val, X_test, y_train, y_val, y_test, kept_classes
     """
-    X, y, meta = build_feature_dataset(root, verbose=True)
+    X, y, meta = build_feature_dataset(root, emg_column_names, valid_classes, verbose=True)
 
     print("\nRaw unique labels in y:", np.unique(y))
     print("Total samples:", len(y))
