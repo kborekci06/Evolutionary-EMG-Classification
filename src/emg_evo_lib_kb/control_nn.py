@@ -21,7 +21,7 @@ from emg_evo_lib_kb import build_feature_dataset
 
 #%% Data Loading & Splitting
 
-def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, val_size = 0.1, random_state = 42):
+def load_data_and_split(root, emg_column_names, valid_classes, test_size = 0.2, val_size = 0.1, random_state = 42, min_samples_per_class = 3):
     """
     Load features & labels using preprocessing.build_feature_dataset
     and split into train, validation, and test sets.
@@ -133,7 +133,7 @@ def plot_confusion_matrix(cm, class_labels, title = "Confusion Matrix"):
 
 #%% Function for Training & Evaluation
 
-def train_and_evaluate(root, valid_classes, hidden_layers = (64, 32)):
+def train_and_evaluate(root, emg_column_names, valid_classes, hidden_layers = (64, 32)):
     """
     Full training + evaluation pipeline for the control neural network.
 
@@ -145,7 +145,7 @@ def train_and_evaluate(root, valid_classes, hidden_layers = (64, 32)):
         - Print metrics and plot confusion matrix on test set
     """
     # 1. Load and split data
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_and_split(root)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_and_split(root, emg_column_names, valid_classes)
 
     input_dim = X_train.shape[1]
     print(f"\nInput feature dimension: {input_dim}")
