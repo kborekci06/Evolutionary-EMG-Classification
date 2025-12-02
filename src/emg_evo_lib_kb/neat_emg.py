@@ -82,3 +82,13 @@ def evaluate_genome(genome, config, X, y, valid_classes):
             correct += 1
 
     return correct / total if total > 0 else 0.0
+
+
+def eval_genomes(genomes, config, X_train, y_train, valid_classes):
+    """
+    NEAT callback: evaluate all genomes in the current population.
+    Sets genome.fitness for each genome.
+    """
+    for genome_id, genome in genomes:
+        acc = evaluate_genome(genome, config, X_train, y_train, valid_classes)
+        genome.fitness = acc
