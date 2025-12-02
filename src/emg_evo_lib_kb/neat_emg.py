@@ -97,8 +97,9 @@ def plot_fitness_stats(stats):
     """
     Plot best and average fitness over generations.
     """
-    best_fitness = stats.get_fitness_stat('max')
-    avg_fitness  = stats.get_fitness_stat('mean')
+    best_fitness = stats.get_fitness_stat(max)          # best per generation
+    avg_fitness  = stats.get_fitness_stat(np.mean)      # average per generation
+
     generations  = range(len(best_fitness))
 
     plt.figure(figsize=(8, 5))
