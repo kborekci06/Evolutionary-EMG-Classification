@@ -92,3 +92,23 @@ def eval_genomes(genomes, config, X_train, y_train, valid_classes):
     for genome_id, genome in genomes:
         acc = evaluate_genome(genome, config, X_train, y_train, valid_classes)
         genome.fitness = acc
+
+#%% Helper Function to plot the fitness over generations
+def plot_fitness_stats(stats):
+    """
+    Plot best and average fitness over generations.
+    """
+    best_fitness = stats.get_fitness_stat('max')
+    avg_fitness  = stats.get_fitness_stat('mean')
+    generations  = range(len(best_fitness))
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(generations, best_fitness, label="Best Fitness")
+    plt.plot(generations, avg_fitness, label="Average Fitness")
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness (Accuracy)")
+    plt.title("NEAT Fitness Over Generations")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
