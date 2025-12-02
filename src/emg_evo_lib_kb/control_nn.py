@@ -161,7 +161,7 @@ def plot_confusion_matrix(cm, class_labels, title = "Confusion Matrix"):
 
 #%% Function for Training & Evaluation
 
-def train_and_evaluate(root, emg_column_names, valid_classes, hidden_layers = (64, 32)):
+def run_control_nn(root, emg_column_names, valid_classes, hidden_layers = (64, 32)):
     """
     Full training + evaluation pipeline for the control neural network.
 
