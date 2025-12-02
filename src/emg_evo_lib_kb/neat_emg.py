@@ -13,8 +13,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 
 import neat
 
-from preprocessing import build_feature_dataset
-from control_nn import plot_confusion_matrix
+from emg_evo_lib_kb import build_feature_dataset, plot_confusion_matrix
 # %% Load data and split for NEAT
 
 def load_data_and_split_neat(root, emg_column_names, valid_classes,
