@@ -151,7 +151,7 @@ def run_neat_emg(root, emg_column_names, valid_classes,
     # 5. Run NEAT
     print("\nRunning NEAT for", n_generations, "generations...")
     winner = population.run(
-        lambda genomes, cfg: eval_genomes(genomes, cfg, X_train_scaled, y_train),
+        lambda genomes, cfg: eval_genomes(genomes, cfg, X_train_scaled, y_train, valid_classes),
         n_generations,
     )
 
@@ -161,9 +161,9 @@ def run_neat_emg(root, emg_column_names, valid_classes,
     # 6. Evaluate winner on train, val, test
     print("\n--- Winner Performance ---")
 
-    train_acc = evaluate_genome(winner, config, X_train_scaled, y_train)
-    val_acc   = evaluate_genome(winner, config, X_val_scaled, y_val)
-    test_acc  = evaluate_genome(winner, config, X_test_scaled, y_test)
+    train_acc = evaluate_genome(winner, config, X_train_scaled, y_train, valid_classes)
+    val_acc   = evaluate_genome(winner, config, X_val_scaled, y_val, valid_classes)
+    test_acc  = evaluate_genome(winner, config, X_test_scaled, y_test, valid_classes)
 
     print(f"Train Accuracy: {train_acc * 100:.2f}%")
     print(f"Val Accuracy:   {val_acc * 100:.2f}%")
