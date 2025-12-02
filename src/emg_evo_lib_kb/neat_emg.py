@@ -58,4 +58,27 @@ def load_data_and_split_neat(root, emg_column_names, valid_classes,
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-#%%
+#%% NEAT Evaluation Helper Functions
+
+def evaluate_genome(genome, config, X, y, valid_classes):
+    """
+    Compute classification accuracy of a single genome on (X, y).
+
+    Assumes:
+        - X: shape (N_samples, 64)
+        - y: labels in {1,2,3,4,5,6}
+        - Genome corresponds to a FeedForwardNetwork with 64 inputs, 6 outputs.
+    """
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+
+    correct = 0
+    total = len(y)
+
+    for xi, yi in zip(X, y):
+        output = net.activate(xi.tolist())   # 6 raw outputs
+        pred_idx = int(np.argmax(output))   # 0..5
+        pred_label = valid_classes[pred_idx]  # map index -> class label (1..6)
+        if pred_label == yi:
+            correct += 1
+
+    return correct / total if total > 0 else 0.0
