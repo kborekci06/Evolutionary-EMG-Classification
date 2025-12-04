@@ -149,7 +149,7 @@ def plot_confusion_matrix(cm, class_labels, title = "Confusion Matrix"):
         cm,
         annot=True,
         fmt="d",
-        cmap="Blues",
+        cmap="Reds",
         xticklabels=class_labels,
         yticklabels=class_labels,
     )
