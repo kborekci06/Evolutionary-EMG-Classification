@@ -8,10 +8,10 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.8"
 
-# Add your library dependencies here
+# Library dependencies here
 dependencies = []
 
-# This tells setuptools to find packages inside /src
+# Packages inside /src
 [tool.setuptools.packages]
 find = { where = ["src"] }
 
