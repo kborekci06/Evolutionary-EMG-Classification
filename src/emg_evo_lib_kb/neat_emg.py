@@ -12,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 import neat
+import graphviz
+import random
 
 from emg_evo_lib_kb import build_feature_dataset, plot_confusion_matrix
 # %% Load data and split for NEAT
@@ -112,6 +114,47 @@ def plot_fitness_stats(stats):
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+#%% Function to save NEAT genome
+def draw_genome_graphviz(config, genome, filename: str, node_names=None, view=False):
+    """
+    Save a NEAT genome topology diagram to <filename>.png using graphviz.
+    """
+    if node_names is None:
+        node_names = {}
+
+    dot = graphviz.Digraph(format="png")
+    dot.attr(rankdir="LR")
+
+    # Input nodes (neat-python uses negative keys: -1, -2, ... -num_inputs)
+    for i in range(config.genome_config.num_inputs):
+        node_id = -i - 1
+        label = node_names.get(node_id, f"in{i}")
+        dot.node(str(node_id), label, shape="box", style="filled", fillcolor="#97C2FC")
+
+    # Output nodes (usually 0..num_outputs-1)
+    for o in range(config.genome_config.num_outputs):
+        label = node_names.get(o, f"out{o}")
+        dot.node(str(o), label, shape="box", style="filled", fillcolor="#FFB07C")
+
+    # Hidden nodes (everything else)
+    hidden_ids = [nid for nid in genome.nodes.keys()
+                  if nid not in range(config.genome_config.num_outputs)]
+    for nid in hidden_ids:
+        dot.node(str(nid), f"h{nid}", style="filled", fillcolor="#C4F0C2")
+
+    # Connections
+    for cg in genome.connections.values():
+        src, dst = cg.key
+        if cg.enabled:
+            dot.edge(str(src), str(dst), color="black", label=f"{cg.weight:.2f}")
+        else:
+            # Optional: show disabled edges as dotted gray (can be noisy)
+            # dot.edge(str(src), str(dst), color="gray", style="dotted")
+            pass
+
+    dot.render(filename, view=view)
+    return filename + ".png"
+
 
 #%% Main NEAT Pipeline for EMG Classification
 def run_neat_emg(root, emg_column_names, valid_classes,
@@ -149,6 +192,22 @@ def run_neat_emg(root, emg_column_names, valid_classes,
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
+    # GEN-0: pick a random individual from the initial population and draw it
+    gen0_genome_id = random.choice(list(population.population.keys()))
+    gen0_genome = population.population[gen0_genome_id]
+
+    output_labels = {
+        0: "Class1", 1: "Class2", 2: "Class3", 3: "Class4", 4: "Class5", 5: "Class6"
+    }
+    draw_genome_graphviz(
+        config,
+        gen0_genome,
+        filename="fig_gen0_random",
+        node_names=output_labels,
+        view=False
+    )
+    print(f"Saved gen-0 random topology diagram: fig_gen0_random.png")
+
     # 5. Run NEAT
     print("\nRunning NEAT for", n_generations, "generations...")
     winner = population.run(
@@ -158,6 +217,16 @@ def run_neat_emg(root, emg_column_names, valid_classes,
 
     print("\n=== NEAT Evolution Complete ===")
     print("Best genome:\n", winner)
+
+    # Draw winner genome
+    draw_genome_graphviz(
+    config,
+    winner,
+    filename="fig_neat_winner",
+    node_names=output_labels,
+    view=False
+    )
+    print("Saved winner topology diagram: fig_neat_winner.png")
 
     # 6. Evaluate winner on train, val, test
     print("\n--- Winner Performance ---")
@@ -201,3 +270,5 @@ def run_neat_emg(root, emg_column_names, valid_classes,
 
     # 8. Plot fitness over generations
     plot_fitness_stats(stats)
+
+    return winner
